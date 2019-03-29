@@ -699,12 +699,13 @@ static uint8_t _led_stats = 0;
  __attribute__((weak))
 void hook_usb_suspend_entry(void)
 {
-    // Turn LED off to save power
-    // Set 0 with putting aside status before suspend and restore
-    // it after wakeup, then LED is updated at keyboard_task() in main loop
+    // Turn LED off to save power and keep state to resotre it later.
+    // LED state will be updated by keyboard_task() in main loop hopefully.
     _led_stats = keyboard_led_stats;
     keyboard_led_stats = 0;
-    led_set(keyboard_led_stats);
+    // Calling led_set here causes freese problem with USB-USB converter
+    // when computer powers up or reboots.
+    //led_set(keyboard_led_stats);
 
     matrix_clear();
     clear_keyboard();
