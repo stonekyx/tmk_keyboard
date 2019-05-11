@@ -14,11 +14,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <stdlib.h>
+#include <string.h>
 #include "host.h"
 #include "report.h"
 #include "debug.h"
 #include "action_util.h"
 #include "timer.h"
+#include "avr/xprintf.h"
 
 static inline void add_key_byte(uint8_t code);
 static inline void del_key_byte(uint8_t code);
@@ -43,6 +46,9 @@ static int8_t cb_count = 0;
 // TODO: pointer variable is not needed
 //report_keyboard_t keyboard_report = {};
 report_keyboard_t *keyboard_report = &(report_keyboard_t){};
+static packed_report *recorded_reports[64];
+static uint8_t record_size = 0;
+static int8_t recording = 0;
 
 #ifndef NO_ACTION_ONESHOT
 static int8_t oneshot_mods = 0;
@@ -51,6 +57,114 @@ static int16_t oneshot_time = 0;
 #endif
 #endif
 
+
+void start_recording(void) {
+  recording = 1;
+  while (record_size > 0) {
+    free(recorded_reports[--record_size]);
+  }
+}
+
+void end_recording(void) {
+  recording = 0;
+}
+
+packed_report **get_records(void) {
+  if (!recording) {
+    return NULL;
+  }
+  packed_report **result = (packed_report**) malloc(sizeof(packed_report*) * record_size);
+  uint16_t i;
+  for (i = 0; i < record_size; i++) {
+    result[i] = (packed_report *) malloc(recorded_reports[i]->size);
+    memcpy(result[i], recorded_reports[i], recorded_reports[i]->size);
+  }
+  return result;
+}
+
+uint8_t get_record_size(void) {
+  return recording ? record_size : 0;
+}
+
+static inline uint8_t get_bit(uint8_t *bytes, uint16_t offset) {
+  return bytes[offset / 8] & (1 << (offset % 8));
+}
+
+static inline void set_bit(uint8_t *bytes, uint16_t offset) {
+  bytes[offset / 8] |= (1 << (offset % 8));
+}
+
+static report_keyboard_t *unpack(packed_report *record) {
+  uint16_t i;
+  report_keyboard_t *result = (report_keyboard_t *)malloc(sizeof(report_keyboard_t));
+  if (record->type == 1) {
+    memcpy(result, record->bytes, sizeof(report_keyboard_t));
+  } else {
+    memset(result, 0, sizeof(report_keyboard_t));
+    for (i = 0; i < record->size - ((char*)record->bytes - (char*)record); i++) {
+      set_bit(result->raw, record->bytes[i]);
+    }
+  }
+  return result;
+}
+
+void play_records(packed_report **records, uint8_t size) {
+  uint16_t i;
+  report_keyboard_t *empty = (report_keyboard_t*)malloc(sizeof(report_keyboard_t));
+  memset(empty, 0, sizeof(report_keyboard_t));
+  for (i = 0; i < size; i++) {
+    report_keyboard_t *unpacked = unpack(records[i]);
+    host_keyboard_send(unpacked);
+    free(unpacked);
+  }
+  host_keyboard_send(empty);
+  free(empty);
+}
+
+static uint16_t count_bits(report_keyboard_t *report) {
+  uint16_t i;
+  uint16_t count = 0;
+  for (i = 0; i < 8 * sizeof(report_keyboard_t); i++) {
+    if (get_bit(report->raw, i)) {
+      count++;
+    }
+  }
+  return count;
+}
+
+static void save_report(void) {
+  if (recording && record_size < 64) {
+    uint16_t bits = count_bits(keyboard_report);
+    packed_report *saved = NULL;
+    if (bits >= sizeof(report_keyboard_t)) {
+      uint16_t size = sizeof(packed_report) + sizeof(report_keyboard_t);
+      saved = (packed_report*)malloc(size);
+      saved->type = 1;
+      saved->size = size;
+      memcpy(saved->bytes, keyboard_report, sizeof(report_keyboard_t));
+    } else {
+      uint16_t size = sizeof(packed_report) + bits;
+      uint16_t i, j;
+      saved = (packed_report*)malloc(size);
+      saved->type = 0;
+      saved->size = size;
+      for (i = j = 0; i < 8 * sizeof(report_keyboard_t); i++) {
+        if (get_bit(keyboard_report->raw, i)) {
+          saved->bytes[j++] = i;
+        }
+      }
+    }
+    recorded_reports[record_size++] = saved;
+    {
+      uint16_t i;
+      xprintf("Recorded %u, %u, ", saved->size, saved->type);
+      for (i = 0; i < saved->size - ((char*)saved->bytes - (char*)saved); i++) {
+        xprintf("%u, ", saved->bytes[i]);
+      }
+      xprintf("\n");
+    }
+  }
+}
 
 void send_keyboard_report(void) {
     keyboard_report->mods  = real_mods;
@@ -69,6 +183,7 @@ void send_keyboard_report(void) {
         }
     }
 #endif
+    save_report();
     host_keyboard_send(keyboard_report);
 }
 

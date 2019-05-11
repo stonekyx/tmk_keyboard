@@ -2,6 +2,8 @@
  * HHKB Layout
  */
 #include "keymap_common.h"
+#include "avr/xprintf.h"
+#include <stdlib.h>
 
 
 #ifdef KEYMAP_SECTION_ENABLE
@@ -70,7 +72,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * ,-----------------------------------------------------------.
      * |Quit|   | @ |   |   |   |   |   |   |   |   |   |   |   |  |
      * |-----------------------------------------------------------|
-     * |     |   |   |   |   |   |   |   |   |   |   |   |   |     |
+     * |PLAY |REC|   |   |   |   |   |   |   |   |   |   |   |     |
      * |-----------------------------------------------------------|
      * |      |   |   |   |   |   |   |   |   |   |   |   |        |
      * |-----------------------------------------------------------|
@@ -80,7 +82,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      *       `-------------------------------------------'
      */
     KEYMAP(FN13,NO,FN14,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,   \
-           NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO, NO, NO, NO,      \
+           FN16,FN15,NO,NO,NO,NO,NO,NO,NO,NO,NO, NO, NO, NO,      \
            NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,            \
            NO,NO,NO,NO,NO,NO,NO,NO,NO, NO,NO,NO,NO,            \
                 NO,NO,          NO,               NO,NO),
@@ -88,7 +90,12 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
 
 
 enum macro_id {
-  EMAIL
+  EMAIL,
+};
+
+enum function_id {
+  RECORD,
+  PLAY,
 };
 
 /*
@@ -114,6 +121,8 @@ const action_t fn_actions[] PROGMEM = {
     [12] = ACTION_LAYER_TAP_TOGGLE(3),
     [13] = ACTION_LAYER_SET_CLEAR(0),
     [14] = ACTION_MACRO(EMAIL),
+    [15] = ACTION_FUNCTION(RECORD),
+    [16] = ACTION_FUNCTION(PLAY),
 };
 
 /*
@@ -129,4 +138,41 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
       break;
   }
   return MACRO_NONE;
+}
+
+static packed_report **records = NULL;
+static uint8_t record_size = 0;
+
+void action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
+{
+  switch (id) {
+    case RECORD:
+      if (!record->event.pressed) {
+        break;
+      }
+      if (records) {
+        while (record_size) {
+          free(records[--record_size]);
+        }
+        free(records);
+      }
+      if (records = get_records()) {
+        record_size = get_record_size();
+        end_recording();
+        xprintf("Got %u records\n", record_size);
+      } else {
+        start_recording();
+        xprintf("Start recording...\n");
+      }
+      layer_clear();
+      break;
+    case PLAY:
+      if (!record->event.pressed) {
+        break;
+      }
+      if (records) {
+        play_records(records, record_size);
+      }
+      break;
+  }
 }

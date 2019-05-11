@@ -25,7 +25,17 @@ extern "C" {
 #endif
 
 extern report_keyboard_t *keyboard_report;
+typedef struct {
+  uint16_t size;
+  uint8_t type;
+  uint8_t bytes[];
+} packed_report;
 
+void start_recording(void);
+void end_recording(void);
+packed_report **get_records(void);
+uint8_t get_record_size(void);
+void play_records(packed_report **records, uint8_t size);
 void send_keyboard_report(void);
 
 /* key */
