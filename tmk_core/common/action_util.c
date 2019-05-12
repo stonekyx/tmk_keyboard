@@ -46,7 +46,8 @@ static int8_t cb_count = 0;
 // TODO: pointer variable is not needed
 //report_keyboard_t keyboard_report = {};
 report_keyboard_t *keyboard_report = &(report_keyboard_t){};
-static packed_report *recorded_reports[64];
+#define MAX_RECORDS 128
+static packed_report *recorded_reports[MAX_RECORDS];
 static uint8_t record_size = 0;
 static int8_t recording = 0;
 
@@ -58,11 +59,14 @@ static int16_t oneshot_time = 0;
 #endif
 
 
+static report_keyboard_t prev_report = {};
+
 void start_recording(void) {
   recording = 1;
   while (record_size > 0) {
     free(recorded_reports[--record_size]);
   }
+  memset(&prev_report, 0, sizeof(prev_report));
 }
 
 void end_recording(void) {
@@ -76,8 +80,8 @@ packed_report **get_records(void) {
   packed_report **result = (packed_report**) malloc(sizeof(packed_report*) * record_size);
   uint16_t i;
   for (i = 0; i < record_size; i++) {
-    result[i] = (packed_report *) malloc(recorded_reports[i]->size);
-    memcpy(result[i], recorded_reports[i], recorded_reports[i]->size);
+    result[i] = (packed_report *) malloc(sizeof(packed_report) + recorded_reports[i]->size);
+    memcpy(result[i], recorded_reports[i], sizeof(packed_report) + recorded_reports[i]->size);
   }
   return result;
 }
@@ -94,75 +98,54 @@ static inline void set_bit(uint8_t *bytes, uint16_t offset) {
   bytes[offset / 8] |= (1 << (offset % 8));
 }
 
-static report_keyboard_t *unpack(packed_report *record) {
+static inline void toggle_bit(uint8_t *bytes, uint16_t offset) {
+  bytes[offset / 8] ^= (1 << (offset % 8));
+}
+
+static void apply(report_keyboard_t *report, packed_report *record) {
   uint16_t i;
-  report_keyboard_t *result = (report_keyboard_t *)malloc(sizeof(report_keyboard_t));
-  if (record->type == 1) {
-    memcpy(result, record->bytes, sizeof(report_keyboard_t));
-  } else {
-    memset(result, 0, sizeof(report_keyboard_t));
-    for (i = 0; i < record->size - ((char*)record->bytes - (char*)record); i++) {
-      set_bit(result->raw, record->bytes[i]);
-    }
+  for (i = 0; i < record->size; i++) {
+    toggle_bit(report->raw, record->bytes[i]);
   }
-  return result;
 }
 
 void play_records(packed_report **records, uint8_t size) {
   uint16_t i;
-  report_keyboard_t *empty = (report_keyboard_t*)malloc(sizeof(report_keyboard_t));
-  memset(empty, 0, sizeof(report_keyboard_t));
+  report_keyboard_t *report = (report_keyboard_t*)malloc(sizeof(report_keyboard_t));
+  memset(report, 0, sizeof(report_keyboard_t));
   for (i = 0; i < size; i++) {
-    report_keyboard_t *unpacked = unpack(records[i]);
-    host_keyboard_send(unpacked);
-    free(unpacked);
+    apply(report, records[i]);
+    host_keyboard_send(report);
   }
-  host_keyboard_send(empty);
-  free(empty);
-}
-
-static uint16_t count_bits(report_keyboard_t *report) {
-  uint16_t i;
-  uint16_t count = 0;
-  for (i = 0; i < 8 * sizeof(report_keyboard_t); i++) {
-    if (get_bit(report->raw, i)) {
-      count++;
-    }
-  }
-  return count;
+  memset(report, 0, sizeof(report_keyboard_t));
+  host_keyboard_send(report);
+  free(report);
 }
 
 static void save_report(void) {
-  if (recording && record_size < 64) {
-    uint16_t bits = count_bits(keyboard_report);
-    packed_report *saved = NULL;
-    if (bits >= sizeof(report_keyboard_t)) {
-      uint16_t size = sizeof(packed_report) + sizeof(report_keyboard_t);
-      saved = (packed_report*)malloc(size);
-      saved->type = 1;
-      saved->size = size;
-      memcpy(saved->bytes, keyboard_report, sizeof(report_keyboard_t));
-    } else {
-      uint16_t size = sizeof(packed_report) + bits;
-      uint16_t i, j;
-      saved = (packed_report*)malloc(size);
-      saved->type = 0;
-      saved->size = size;
-      for (i = j = 0; i < 8 * sizeof(report_keyboard_t); i++) {
-        if (get_bit(keyboard_report->raw, i)) {
-          saved->bytes[j++] = i;
-        }
+  if (recording && record_size < MAX_RECORDS) {
+    uint16_t i, j;
+    uint8_t delta_size = 0;
+    for (i = 0; i < 8 * sizeof(report_keyboard_t); i++) {
+      if (get_bit(keyboard_report->raw, i) != get_bit(prev_report.raw, i)) {
+        delta_size++;
+      }
+    }
+    packed_report *saved = (packed_report*) malloc(sizeof(packed_report) + delta_size);
+    saved->size = delta_size;
+    for (i = j = 0; i < 8 * sizeof(report_keyboard_t); i++) {
+      if (get_bit(keyboard_report->raw, i) != get_bit(prev_report.raw, i)) {
+        saved->bytes[j++] = (uint8_t) i;
       }
     }
     recorded_reports[record_size++] = saved;
-    {
-      uint16_t i;
-      xprintf("Recorded %u, %u, ", saved->size, saved->type);
-      for (i = 0; i < saved->size - ((char*)saved->bytes - (char*)saved); i++) {
-        xprintf("%u, ", saved->bytes[i]);
-      }
-      xprintf("\n");
+    memcpy(&prev_report, keyboard_report, sizeof(report_keyboard_t));
+
+    xprintf("Recorded %u, ", saved->size);
+    for (i = 0; i < saved->size; i++) {
+      xprintf("%u, ", saved->bytes[i]);
     }
+    xprintf("\n");
   }
 }
 

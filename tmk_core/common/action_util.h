@@ -26,8 +26,7 @@ extern "C" {
 
 extern report_keyboard_t *keyboard_report;
 typedef struct {
-  uint16_t size;
-  uint8_t type;
+  uint8_t size;
   uint8_t bytes[];
 } packed_report;
 
