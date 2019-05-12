@@ -74,7 +74,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * |-----------------------------------------------------------|
      * |PLAY |REC|   |   |   |   |   |   |   |   |   |   |   |     |
      * |-----------------------------------------------------------|
-     * |      |   |   |   |   |   |   |   |   |   |   |   |        |
+     * |      |   |   |   |   |   |   |   |   |   |   |   |PLAYONCE|
      * |-----------------------------------------------------------|
      * |        |   |   |   |   |   |   |   |   |   |   |      |   |
      * `-----------------------------------------------------------'
@@ -83,7 +83,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      */
     KEYMAP(FN13,NO,FN14,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,   \
            FN16,FN15,NO,NO,NO,NO,NO,NO,NO,NO,NO, NO, NO, NO,      \
-           NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,            \
+           NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,FN17,            \
            NO,NO,NO,NO,NO,NO,NO,NO,NO, NO,NO,NO,NO,            \
                 NO,NO,          NO,               NO,NO),
 };
@@ -96,6 +96,7 @@ enum macro_id {
 enum function_id {
   RECORD,
   PLAY,
+  PLAYONCE,
 };
 
 /*
@@ -123,6 +124,7 @@ const action_t fn_actions[] PROGMEM = {
     [14] = ACTION_MACRO(EMAIL),
     [15] = ACTION_FUNCTION(RECORD),
     [16] = ACTION_FUNCTION(PLAY),
+    [17] = ACTION_FUNCTION(PLAYONCE),
 };
 
 /*
@@ -166,12 +168,16 @@ void action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
       }
       layer_clear();
       break;
+    case PLAYONCE:
     case PLAY:
       if (!record->event.pressed) {
         break;
       }
       if (records) {
         play_records(records, record_size);
+      }
+      if (id == PLAYONCE) {
+        layer_clear();
       }
       break;
   }
