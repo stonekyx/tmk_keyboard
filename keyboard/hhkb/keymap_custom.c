@@ -57,7 +57,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * |-----------------------------------------------------------|
      * |      |   |   |SLO|MED|FAS|LEF|DOW|UP |RIG|   |   |        |
      * |-----------------------------------------------------------|
-     * |        |   |   |   |   |   |   |B_1|B_2|B_3|   |  NO  |NO |
+     * |        |   |   |   |   |   |   |B_1|B_2|B_3|   |  NO  |   |
      * `-----------------------------------------------------------'
      *       |   |     |                       |     |NO |
      *       `-------------------------------------------'
@@ -65,7 +65,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
     KEYMAP(FN13,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,   \
            TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_WH_LEFT,MS_WH_DOWN,MS_WH_UP,MS_WH_RIGHT,TRNS, TRNS, TRNS, TRNS,      \
            TRNS,TRNS,TRNS,MS_ACCEL0,MS_ACCEL1,MS_ACCEL2,MS_LEFT,MS_DOWN,MS_UP,MS_RIGHT,TRNS,TRNS,TRNS,            \
-           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,TRNS,NO,NO,            \
+           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,TRNS,NO,TRNS,            \
                 TRNS,TRNS,          TRNS,               TRNS,NO),
 
     /* Layer 3: Macro mode
@@ -76,7 +76,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * |-----------------------------------------------------------|
      * |      |   |   |   |   |   |   |   |   |   |   |   |PLAYONCE|
      * |-----------------------------------------------------------|
-     * |        |   |   |   |   |   |   |   |   |   |   |      |   |
+     * |        |   |   |   |   |   |   |   |   |   |   |      |FN |
      * `-----------------------------------------------------------'
      *       |   |     |                       |     |   |
      *       `-------------------------------------------'
@@ -84,7 +84,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
     KEYMAP(FN13,NO,FN14,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,   \
            FN16,FN15,NO,NO,NO,NO,NO,NO,NO,NO,NO, NO, NO, NO,      \
            NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,FN17,            \
-           NO,NO,NO,NO,NO,NO,NO,NO,NO, NO,NO,NO,NO,            \
+           NO,NO,NO,NO,NO,NO,NO,NO,NO, NO,NO,NO,TRNS,            \
                 NO,NO,          NO,               NO,NO),
 };
 

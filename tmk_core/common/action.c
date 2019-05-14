@@ -267,12 +267,14 @@ void process_action(keyrecord_t *record)
                 case OP_TAP_TOGGLE:
                     /* tap toggle */
                     if (event.pressed) {
-                        if (tap_count < TAPPING_TOGGLE) {
-                            layer_invert(action.layer_tap.val);
+                        if (tap_count <= TAPPING_TOGGLE) {
+                            layer_on(action.layer_tap.val);
                         }
                     } else {
-                        if (tap_count <= TAPPING_TOGGLE) {
-                            layer_invert(action.layer_tap.val);
+                        if (tap_count == 0) {
+                            layer_off(action.layer_tap.val);
+                        } else if (tap_count != TAPPING_TOGGLE) {
+                            layer_clear();
                         }
                     }
                     break;
