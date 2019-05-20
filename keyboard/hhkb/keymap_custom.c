@@ -57,16 +57,16 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * |-----------------------------------------------------------|
      * |      |   |   |SLO|MED|FAS|LEF|DOW|UP |RIG|   |   |        |
      * |-----------------------------------------------------------|
-     * |        |   |   |   |   |   |   |B_1|B_2|B_3|   |  NO  |   |
+     * |        |   |   |   |   |   |   |B_1|B_2|B_3|   | LY3  |   |
      * `-----------------------------------------------------------'
-     *       |   |     |                       |     |NO |
+     *       |   |     |                       |     |LY2|
      *       `-------------------------------------------'
      */
     KEYMAP(FN13,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,   \
            TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_WH_LEFT,MS_WH_DOWN,MS_WH_UP,MS_WH_RIGHT,TRNS, TRNS, TRNS, TRNS,      \
            TRNS,TRNS,TRNS,MS_ACCEL0,MS_ACCEL1,MS_ACCEL2,MS_LEFT,MS_DOWN,MS_UP,MS_RIGHT,TRNS,TRNS,TRNS,            \
-           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,TRNS,NO,TRNS,            \
-                TRNS,TRNS,          TRNS,               TRNS,NO),
+           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,TRNS,FN9,TRNS,            \
+                TRNS,TRNS,          TRNS,               TRNS,FN8),
 
     /* Layer 3: Macro mode
      * ,-----------------------------------------------------------.
@@ -76,16 +76,16 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * |-----------------------------------------------------------|
      * |      |   |   |   |   |   |   |   |   |   |   |   |PLAYONCE|
      * |-----------------------------------------------------------|
-     * |        |   |   |   |   |   |   |   |   |   |   |      |FN |
+     * |        |   |   |   |   |   |   |   |   |   |   | LY3  |FN |
      * `-----------------------------------------------------------'
-     *       |   |     |                       |     |   |
+     *       |   |     |                       |     |LY2|
      *       `-------------------------------------------'
      */
     KEYMAP(FN13,NO,FN14,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,   \
            FN16,FN15,NO,NO,NO,NO,NO,NO,NO,NO,NO, NO, NO, NO,      \
            NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,FN17,            \
-           NO,NO,NO,NO,NO,NO,NO,NO,NO, NO,NO,NO,TRNS,            \
-                NO,NO,          NO,               NO,NO),
+           NO,NO,NO,NO,NO,NO,NO,NO,NO, NO,NO,FN9,TRNS,            \
+                NO,NO,          NO,               NO,FN8),
 };
 
 
@@ -115,8 +115,8 @@ const action_t fn_actions[] PROGMEM = {
     [5]  = ACTION_LAYER_MOMENTARY(6),
     [6]  = ACTION_LAYER_MOMENTARY(7),
     [7]  = ACTION_LAYER_TOGGLE(1),
-    [8]  = ACTION_LAYER_TOGGLE(2),
-    [9]  = ACTION_LAYER_TOGGLE(3),
+    [8]  = ACTION_LAYER_ON(2, ON_RELEASE),
+    [9]  = ACTION_LAYER_ON(3, ON_RELEASE),
     [10] = ACTION_LAYER_TAP_TOGGLE(1),
     [11] = ACTION_LAYER_TAP_TOGGLE(2),
     [12] = ACTION_LAYER_TAP_TOGGLE(3),
