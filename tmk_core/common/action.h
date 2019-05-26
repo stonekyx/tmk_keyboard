@@ -46,6 +46,8 @@ typedef struct {
 #endif
 } keyrecord_t;
 
+extern bool func_pressing;
+
 /* Execute action per keyevent */
 void action_exec(keyevent_t event);
 

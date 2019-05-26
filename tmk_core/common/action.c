@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "nodebug.h"
 #endif
 
+bool func_pressing = false;
 
 void action_exec(keyevent_t event)
 {
@@ -75,6 +76,10 @@ void process_action(keyrecord_t *record)
     dprint(" default_layer_state: "); default_layer_debug();
 #endif
     dprintln();
+
+    if (action.kind.id != ACT_LAYER_TAP || action.layer_tap.code != OP_TAP_TOGGLE) {
+      func_pressing = false;
+    }
 
     switch (action.kind.id) {
         /* Key and Mods */
@@ -267,15 +272,15 @@ void process_action(keyrecord_t *record)
                 case OP_TAP_TOGGLE:
                     /* tap toggle */
                     if (event.pressed) {
-                        if (tap_count <= TAPPING_TOGGLE) {
-                            layer_on(action.layer_tap.val);
-                        }
+                        layer_on(action.layer_tap.val);
+                        func_pressing = true;
                     } else {
-                        if (tap_count == 0) {
+                        if (tap_count == 0 || !func_pressing) {
                             layer_off(action.layer_tap.val);
                         } else if (tap_count != TAPPING_TOGGLE) {
                             layer_clear();
                         }
+                        func_pressing = false;
                     }
                     break;
                 case OP_ON_OFF:
