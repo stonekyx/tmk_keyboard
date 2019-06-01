@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "debug.h"
 #include "action_util.h"
 #include "timer.h"
+#include "wait.h"
 #include "avr/xprintf.h"
 
 static inline void add_key_byte(uint8_t code);
@@ -111,11 +112,15 @@ static void apply(report_keyboard_t *report, packed_report *record) {
 
 void play_records(packed_report **records, uint8_t size) {
   uint16_t i;
+  uint8_t ms;
   report_keyboard_t *report = (report_keyboard_t*)malloc(sizeof(report_keyboard_t));
   memset(report, 0, sizeof(report_keyboard_t));
   for (i = 0; i < size; i++) {
     apply(report, records[i]);
     host_keyboard_send(report);
+    for (ms = 0; ms < 5; ms++) {
+      wait_ms(1);
+    }
   }
   memset(report, 0, sizeof(report_keyboard_t));
   host_keyboard_send(report);
