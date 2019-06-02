@@ -70,6 +70,8 @@ void mousekey_off(uint8_t code);
 void mousekey_clear(void);
 void mousekey_send(void);
 
+void mousekey_move(uint8_t x, uint8_t y);
+
 #ifdef __cplusplus
 }
 #endif

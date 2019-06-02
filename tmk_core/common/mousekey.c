@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
+#include <string.h>
 #include "keycode.h"
 #include "host.h"
 #include "timer.h"
@@ -180,6 +181,17 @@ void mousekey_clear(void)
     mouse_report = (report_mouse_t){};
     mousekey_repeat = 0;
     mousekey_accel = 0;
+}
+
+void mousekey_move(uint8_t x, uint8_t y)
+{
+    static report_mouse_t bkp;
+    memcpy(&bkp, &mouse_report, sizeof(mouse_report));
+    mouse_report = (report_mouse_t){};
+    mouse_report.x = x;
+    mouse_report.y = y;
+    mousekey_send();
+    memcpy(&mouse_report, &bkp, sizeof(bkp));
 }
 
 static void mousekey_debug(void)

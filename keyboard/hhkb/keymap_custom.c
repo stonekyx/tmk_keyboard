@@ -3,6 +3,8 @@
  */
 #include "keymap_common.h"
 #include "avr/xprintf.h"
+#include "mousekey.h"
+#include "wait.h"
 #include <stdlib.h>
 
 
@@ -53,7 +55,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * ,-----------------------------------------------------------.
      * |Quit|   |   |   |   |   |   |   |   |   |   |   |   |   |  |
      * |-----------------------------------------------------------|
-     * |     |   |   |   |   |   |W_L|W_D|W_U|W_R|   |   |   |     |
+     * |     |LL |   |   |   |   |W_L|W_D|W_U|W_R|RR |   |   |     |
      * |-----------------------------------------------------------|
      * |      |   |   |SLO|MED|FAS|LEF|DOW|UP |RIG|   |   |        |
      * |-----------------------------------------------------------|
@@ -63,7 +65,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      *       `-------------------------------------------'
      */
     KEYMAP(FN13,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,   \
-           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_WH_LEFT,MS_WH_DOWN,MS_WH_UP,MS_WH_RIGHT,TRNS, TRNS, TRNS, TRNS,      \
+           TRNS,FN18,TRNS,TRNS,TRNS,TRNS,MS_WH_LEFT,MS_WH_DOWN,MS_WH_UP,MS_WH_RIGHT,FN19, TRNS, TRNS, TRNS,      \
            TRNS,TRNS,TRNS,MS_ACCEL0,MS_ACCEL1,MS_ACCEL2,MS_LEFT,MS_DOWN,MS_UP,MS_RIGHT,TRNS,TRNS,TRNS,            \
            TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,TRNS,FN9,TRNS,            \
                 TRNS,TRNS,          TRNS,               TRNS,FN8),
@@ -97,6 +99,8 @@ enum function_id {
   RECORD,
   PLAY,
   PLAYONCE,
+  MOUSE_LEFTTOP,
+  MOUSE_RIGHTTOP,
 };
 
 /*
@@ -125,6 +129,8 @@ const action_t fn_actions[] PROGMEM = {
     [15] = ACTION_FUNCTION(RECORD),
     [16] = ACTION_FUNCTION(PLAY),
     [17] = ACTION_FUNCTION(PLAYONCE),
+    [18] = ACTION_FUNCTION(MOUSE_LEFTTOP),
+    [19] = ACTION_FUNCTION(MOUSE_RIGHTTOP),
 };
 
 /*
@@ -147,6 +153,7 @@ static uint8_t record_size = 0;
 
 void action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
 {
+  uint8_t i;
   switch (id) {
     case RECORD:
       if (!record->event.pressed) {
@@ -178,6 +185,26 @@ void action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
       }
       if (id == PLAYONCE) {
         layer_clear();
+      }
+      break;
+    case MOUSE_LEFTTOP:
+      for (i = 0; i < 10; i++) {
+        mousekey_move(0, -MOUSEKEY_MOVE_MAX);
+        wait_ms(3);
+      }
+      for (i = 0; i < 50; i++) {
+        mousekey_move(-MOUSEKEY_MOVE_MAX, 0);
+        wait_ms(3);
+      }
+      break;
+    case MOUSE_RIGHTTOP:
+      for (i = 0; i < 10; i++) {
+        mousekey_move(0, -MOUSEKEY_MOVE_MAX);
+        wait_ms(3);
+      }
+      for (i = 0; i < 50; i++) {
+        mousekey_move(MOUSEKEY_MOVE_MAX, 0);
+        wait_ms(3);
       }
       break;
   }
