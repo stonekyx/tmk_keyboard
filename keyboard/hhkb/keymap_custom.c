@@ -55,11 +55,11 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
      * ,-----------------------------------------------------------.
      * |Quit|   |   |   |   |   |   |   |   |   |   |   |   |   |  |
      * |-----------------------------------------------------------|
-     * |     |LL |   |   |   |   |W_L|W_D|W_U|W_R|RR |   |   |     |
+     * |     |UL |   |   |   |   |W_L|W_D|W_U|W_R|UR |   |   |     |
      * |-----------------------------------------------------------|
      * |      |   |   |SLO|MED|FAS|LEF|DOW|UP |RIG|   |   |        |
      * |-----------------------------------------------------------|
-     * |        |   |   |   |   |   |   |B_1|B_2|B_3|   | LY3  |   |
+     * |        |DL |   |   |   |   |   |B_1|B_2|B_3|DR | LY3  |   |
      * `-----------------------------------------------------------'
      *       |   |     |                       |     |LY2|
      *       `-------------------------------------------'
@@ -67,7 +67,7 @@ const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
     KEYMAP(FN13,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,   \
            TRNS,FN18,TRNS,TRNS,TRNS,TRNS,MS_WH_LEFT,MS_WH_DOWN,MS_WH_UP,MS_WH_RIGHT,FN19, TRNS, TRNS, TRNS,      \
            TRNS,TRNS,TRNS,MS_ACCEL0,MS_ACCEL1,MS_ACCEL2,MS_LEFT,MS_DOWN,MS_UP,MS_RIGHT,TRNS,TRNS,TRNS,            \
-           TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,TRNS,FN9,TRNS,            \
+           TRNS,FN20,TRNS,TRNS,TRNS,TRNS,TRNS,MS_BTN1,MS_BTN2, MS_BTN3,FN21,FN9,TRNS,            \
                 TRNS,TRNS,          TRNS,               TRNS,FN8),
 
     /* Layer 3: Macro mode
@@ -101,6 +101,8 @@ enum function_id {
   PLAYONCE,
   MOUSE_LEFTTOP,
   MOUSE_RIGHTTOP,
+  MOUSE_LEFTDOWN,
+  MOUSE_RIGHTDOWN,
 };
 
 /*
@@ -131,6 +133,8 @@ const action_t fn_actions[] PROGMEM = {
     [17] = ACTION_FUNCTION(PLAYONCE),
     [18] = ACTION_FUNCTION(MOUSE_LEFTTOP),
     [19] = ACTION_FUNCTION(MOUSE_RIGHTTOP),
+    [20] = ACTION_FUNCTION(MOUSE_LEFTDOWN),
+    [21] = ACTION_FUNCTION(MOUSE_RIGHTDOWN),
 };
 
 /*
@@ -190,21 +194,41 @@ void action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
     case MOUSE_LEFTTOP:
       for (i = 0; i < 10; i++) {
         mousekey_move(0, -MOUSEKEY_MOVE_MAX);
-        wait_ms(3);
+        wait_ms(1);
       }
-      for (i = 0; i < 50; i++) {
+      for (i = 0; i < 30; i++) {
         mousekey_move(-MOUSEKEY_MOVE_MAX, 0);
-        wait_ms(3);
+        wait_ms(1);
       }
       break;
     case MOUSE_RIGHTTOP:
       for (i = 0; i < 10; i++) {
         mousekey_move(0, -MOUSEKEY_MOVE_MAX);
-        wait_ms(3);
+        wait_ms(1);
       }
-      for (i = 0; i < 50; i++) {
+      for (i = 0; i < 30; i++) {
         mousekey_move(MOUSEKEY_MOVE_MAX, 0);
-        wait_ms(3);
+        wait_ms(1);
+      }
+      break;
+    case MOUSE_LEFTDOWN:
+      for (i = 0; i < 10; i++) {
+        mousekey_move(0, MOUSEKEY_MOVE_MAX);
+        wait_ms(1);
+      }
+      for (i = 0; i < 30; i++) {
+        mousekey_move(-MOUSEKEY_MOVE_MAX, 0);
+        wait_ms(1);
+      }
+      break;
+    case MOUSE_RIGHTDOWN:
+      for (i = 0; i < 10; i++) {
+        mousekey_move(0, MOUSEKEY_MOVE_MAX);
+        wait_ms(1);
+      }
+      for (i = 0; i < 30; i++) {
+        mousekey_move(MOUSEKEY_MOVE_MAX, 0);
+        wait_ms(1);
       }
       break;
   }
